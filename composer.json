@@ -1,0 +1,32 @@
+{
+    "name": "twosixdigital/id-document-verifier",
+    "type": "project",
+    "description": "API for verifying supplied identity details against OCR data from official documents.",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "ext-fileinfo": "*",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.2",
+        "laravel/framework": "^12.62",
+        "symfony/process": "^7.2"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.24",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.8",
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {"App\\": "app/", "Database\\Factories\\": "database/factories/", "Database\\Seeders\\": "database/seeders/"}
+    },
+    "autoload-dev": {"psr-4": {"Tests\\": "tests/"}},
+    "scripts": {
+        "post-autoload-dump": ["Illuminate\\Foundation\\ComposerScripts::postAutoloadDump", "@php artisan package:discover --ansi"],
+        "post-root-package-install": ["@php -r \"file_exists('.env') || copy('.env.example', '.env');\""],
+        "post-create-project-cmd": ["@php artisan key:generate --ansi"]
+    },
+    "config": {"optimize-autoloader": true, "preferred-install": "dist", "sort-packages": true, "platform": {"php": "8.2.12"}},
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

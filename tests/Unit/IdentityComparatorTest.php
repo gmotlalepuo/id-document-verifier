@@ -1,0 +1,11 @@
+<?php
+namespace Tests\Unit;
+use App\Services\IdentityComparator;
+use Tests\TestCase;
+class IdentityComparatorTest extends TestCase {
+ public function test_verifies_case_and_spacing_variations(){ $r=(new IdentityComparator)->compare(['surname'=>'Motlalepuo','forenames'=>'Garenosi K','id_number'=>'436 415 528'],['surname'=>'MOTLALEPUO','forenames'=>'GARENOSI K','id_number'=>'436415528']);$this->assertSame('verified',$r['status']);}
+ public function test_is_inconclusive_when_a_field_is_unreadable(){ $r=(new IdentityComparator)->compare(['surname'=>'Motlalepuo','forenames'=>'Garenosi','id_number'=>'436415528'],['surname'=>'MOTLALEPUO','forenames'=>null,'id_number'=>'436415528']);$this->assertSame('inconclusive',$r['status']);$this->assertNull($r['fields']['forenames']['match']);}
+ public function test_fails_when_provided_information_omits_document_middle_name(){ $r=(new IdentityComparator)->compare(['surname'=>'Example','forenames'=>'Leetalia','id_number'=>'12345'],['surname'=>'EXAMPLE','forenames'=>'LEETALIA XCHRIZELDA','id_number'=>'12345']);$field=$r['fields']['forenames'];$this->assertSame('mismatch',$r['status']);$this->assertFalse($field['match']);$this->assertSame(.5,$field['score']);$this->assertSame('The information provided is missing a middle name shown on the document.',$field['reason']);}
+ public function test_fails_when_provided_middle_name_is_absent_from_document(){ $r=(new IdentityComparator)->compare(['surname'=>'Example','forenames'=>'Leetalia Xchrizelda','id_number'=>'12345'],['surname'=>'EXAMPLE','forenames'=>'LEETALIA','id_number'=>'12345']);$field=$r['fields']['forenames'];$this->assertSame('mismatch',$r['status']);$this->assertFalse($field['match']);$this->assertSame(.5,$field['score']);$this->assertSame('A middle name in the provided information is not present on the document.',$field['reason']);}
+ public function test_verifies_all_forenames_in_a_different_order(){ $r=(new IdentityComparator)->compare(['surname'=>'Example','forenames'=>'Xchrizelda Leetalia','id_number'=>'12345'],['surname'=>'EXAMPLE','forenames'=>'LEETALIA XCHRIZELDA','id_number'=>'12345']);$this->assertSame('verified',$r['status']);$this->assertTrue($r['fields']['forenames']['match']);}
+}

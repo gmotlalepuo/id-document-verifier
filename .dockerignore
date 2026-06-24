@@ -1,0 +1,11 @@
+.git
+.agents
+.env
+.phpunit.result.cache
+vendor
+node_modules
+storage/app/verification/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*

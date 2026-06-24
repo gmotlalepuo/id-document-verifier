@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+    image: id-document-verifier-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: id_document_verifier
+      DB_USERNAME: id_verifier
+      DB_PASSWORD: id_verifier_password
+      OCR_TESSERACT_PATH: tesseract
+      OCR_PDFTOPPM_PATH: pdftoppm
+      OCR_IMAGE_MAGICK_PATH: magick
+      OCR_LANGUAGE: eng
+      OCR_TIMEOUT: 60
+      OCR_MIN_FIELD_SCORE: 0.82
+      OCR_MAX_DOWNLOAD_MB: 15
+      OCR_ALLOW_PRIVATE_URLS: "false"
+      OCR_KEEP_FILES: "false"
+      DOCUMENT_VERIFICATION_API_KEY: local-dev-api-key-change-me
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: id_document_verifier
+      MYSQL_USER: id_verifier
+      MYSQL_PASSWORD: id_verifier_password
+      MYSQL_ROOT_PASSWORD: root_password_change_me
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password_change_me"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql-data:

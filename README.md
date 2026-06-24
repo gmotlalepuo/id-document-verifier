@@ -20,9 +20,64 @@ Every field includes `comparable`, `match`, `score`, and a reason. ID numbers ar
 - ImageMagick (`magick`) with PNG/JPEG/TIFF support
 - Poppler (`pdftoppm`) for PDF documents
 
-On Windows, put all three executable directories on `PATH`, or set their full executable paths in `.env`.
+On Windows, put all three executable directories on `PATH`, or set their full executable paths in `.env`. If you use Docker, these native OCR tools are installed inside the app container.
 
-## Setup
+## Docker setup
+
+The Docker setup runs three services:
+
+- `app`: PHP-FPM with Composer, Laravel, Tesseract OCR, ImageMagick, and Poppler
+- `nginx`: web server exposed at `http://localhost:8080`
+- `db`: MySQL exposed to the host at `localhost:3307`
+
+From the project root:
+
+```powershell
+docker compose up --build -d
+```
+
+The app container will create `.env` from `.env.example` when missing, install Composer dependencies when needed, wait for MySQL, generate `APP_KEY` when missing, and run migrations.
+
+Check that the service is ready:
+
+```powershell
+curl.exe http://localhost:8080/api/v1/health
+```
+
+Expected status is `ready`. If it returns `not_ready`, inspect the app logs:
+
+```powershell
+docker compose logs app
+```
+
+Use this local API key for Docker development unless you change `DOCUMENT_VERIFICATION_API_KEY` in `docker-compose.yml`:
+
+```text
+local-dev-api-key-change-me
+```
+
+Example request:
+
+```powershell
+curl.exe -X POST http://localhost:8080/api/v1/verifications `
+  -H "X-API-Key: local-dev-api-key-change-me" `
+  -H "Content-Type: application/json" `
+  -d "{\"document_url\":\"https://example.com/document.pdf\",\"surname\":\"Motlalepuo\",\"forenames\":\"Garenosi\",\"id_number\":\"436415528\"}"
+```
+
+Stop the containers:
+
+```powershell
+docker compose down
+```
+
+Remove the local MySQL Docker volume and start from a clean database:
+
+```powershell
+docker compose down -v
+```
+
+## Manual setup
 
 ```powershell
 cd C:\xampp\htdocs\id-document-verifier

@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-bookworm
+FROM php:8.3-fpm-bookworm AS app
 
 WORKDIR /var/www/html
 
@@ -41,3 +41,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint
 
 ENTRYPOINT ["docker-entrypoint"]
 CMD ["php-fpm"]
+
+FROM nginx:1.27-alpine AS web
+
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=app /var/www/html/public /var/www/html/public

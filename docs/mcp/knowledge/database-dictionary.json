@@ -1,0 +1,109 @@
+{
+  "version": "1.0.0",
+  "tenant_boundary": "workspace",
+  "tables": [
+    {
+      "name": "postman_workspaces",
+      "purpose": "Top-level RequestLab tenant and organization boundary.",
+      "tenant_path": "id",
+      "fields": [
+        { "name": "id", "type": "uuid", "purpose": "Workspace primary key." },
+        { "name": "user_id", "type": "uuid", "purpose": "Supabase Auth UUID of the workspace owner.", "sensitive": true },
+        { "name": "name", "type": "text", "purpose": "Workspace display name." },
+        { "name": "created_at", "type": "timestamptz", "purpose": "Creation time." }
+      ],
+      "relationships": ["Has many postman_workspace_members, postman_collections, postman_environments, and postman_workspace_invites."]
+    },
+    {
+      "name": "postman_workspace_members",
+      "purpose": "Accepted workspace collaborators and their workspace role.",
+      "tenant_path": "workspace_id -> postman_workspaces.id",
+      "fields": [
+        { "name": "workspace_id", "type": "uuid", "purpose": "Accessible workspace." },
+        { "name": "user_id", "type": "uuid", "purpose": "Supabase Auth UUID of the member.", "sensitive": true },
+        { "name": "email", "type": "text", "purpose": "Member display and invitation-matching email.", "sensitive": true },
+        { "name": "role", "type": "owner|member", "purpose": "Workspace authorization role." },
+        { "name": "joined_at", "type": "timestamptz", "purpose": "Membership acceptance time." }
+      ],
+      "relationships": ["Belongs to postman_workspaces.", "References a Supabase Auth user."]
+    },
+    {
+      "name": "postman_workspace_invites",
+      "purpose": "Pending, accepted, or declined workspace invitations.",
+      "tenant_path": "workspace_id -> postman_workspaces.id",
+      "fields": [
+        { "name": "workspace_id", "type": "uuid", "purpose": "Target workspace." },
+        { "name": "workspace_name", "type": "text", "purpose": "Display snapshot of the target workspace name." },
+        { "name": "email", "type": "text", "purpose": "Invited email address.", "sensitive": true },
+        { "name": "invited_by", "type": "uuid", "purpose": "Inviter Supabase Auth UUID.", "sensitive": true },
+        { "name": "status", "type": "pending|accepted|declined", "purpose": "Invitation state." },
+        { "name": "responded_at", "type": "timestamptz|null", "purpose": "Response time." }
+      ],
+      "relationships": ["Belongs to postman_workspaces.", "References the inviting Supabase Auth user."]
+    },
+    {
+      "name": "postman_collections",
+      "purpose": "Groups related executable API endpoints and stores collection documentation.",
+      "tenant_path": "workspace_id -> postman_workspaces.id",
+      "fields": [
+        { "name": "id", "type": "uuid", "purpose": "Collection primary key." },
+        { "name": "workspace_id", "type": "uuid", "purpose": "Owning workspace." },
+        { "name": "created_by", "type": "uuid", "purpose": "Immutable creator Auth UUID.", "sensitive": true },
+        { "name": "name", "type": "text", "purpose": "Collection display name." },
+        { "name": "description", "type": "text", "purpose": "Collection-level rich documentation." },
+        { "name": "created_at", "type": "timestamptz", "purpose": "Creation time." }
+      ],
+      "relationships": ["Belongs to postman_workspaces.", "Has many postman_folders, postman_requests, and postman_environments."]
+    },
+    {
+      "name": "postman_folders",
+      "purpose": "Hierarchically organizes endpoints inside a collection.",
+      "tenant_path": "collection_id -> postman_collections.workspace_id",
+      "fields": [
+        { "name": "id", "type": "uuid", "purpose": "Folder primary key." },
+        { "name": "collection_id", "type": "uuid", "purpose": "Owning collection." },
+        { "name": "parent_folder_id", "type": "uuid|null", "purpose": "Optional parent folder." },
+        { "name": "name", "type": "text", "purpose": "Folder display name." },
+        { "name": "description", "type": "text", "purpose": "Folder documentation." },
+        { "name": "is_starred", "type": "boolean", "purpose": "Pins the folder at its hierarchy level." },
+        { "name": "sort_order", "type": "integer", "purpose": "Sibling ordering value." }
+      ],
+      "relationships": ["Belongs to postman_collections.", "Optionally belongs to a parent postman_folders row.", "Has child folders and requests."]
+    },
+    {
+      "name": "postman_requests",
+      "purpose": "Stores a validated, executable API request template and its endpoint documentation.",
+      "tenant_path": "collection_id -> postman_collections.workspace_id",
+      "fields": [
+        { "name": "id", "type": "uuid", "purpose": "Request primary key." },
+        { "name": "collection_id", "type": "uuid", "purpose": "Owning collection." },
+        { "name": "folder_id", "type": "uuid|null", "purpose": "Optional containing folder." },
+        { "name": "name", "type": "text", "purpose": "Endpoint display name." },
+        { "name": "documentation", "type": "text", "purpose": "Endpoint-specific rich documentation." },
+        { "name": "method", "type": "HTTP method", "purpose": "Stored request method." },
+        { "name": "url", "type": "text", "purpose": "URL template containing optional environment placeholders." },
+        { "name": "params", "type": "jsonb", "purpose": "Query parameter rows." },
+        { "name": "headers", "type": "jsonb", "purpose": "Header rows; values may be sensitive.", "sensitive": true },
+        { "name": "body_mode", "type": "none|json|raw|form", "purpose": "Request body encoding." },
+        { "name": "body_raw", "type": "text", "purpose": "Raw or JSON body template; may contain sensitive values.", "sensitive": true },
+        { "name": "body_form", "type": "jsonb", "purpose": "Form body rows; values may be sensitive.", "sensitive": true },
+        { "name": "auth", "type": "jsonb", "purpose": "Authentication configuration; credentials are secret.", "sensitive": true }
+      ],
+      "relationships": ["Belongs to postman_collections.", "Optionally belongs to postman_folders in the same collection."]
+    },
+    {
+      "name": "postman_environments",
+      "purpose": "Stores collection-scoped variables resolved into request templates at execution time.",
+      "tenant_path": "workspace_id -> postman_workspaces.id",
+      "fields": [
+        { "name": "id", "type": "uuid", "purpose": "Environment primary key." },
+        { "name": "workspace_id", "type": "uuid", "purpose": "Owning workspace." },
+        { "name": "collection_id", "type": "uuid", "purpose": "Scoped collection." },
+        { "name": "name", "type": "text", "purpose": "Environment display name such as User Acceptance Testing." },
+        { "name": "variables", "type": "jsonb", "purpose": "Enabled/disabled key-value rows; values may contain secrets.", "sensitive": true },
+        { "name": "created_at", "type": "timestamptz", "purpose": "Creation time." }
+      ],
+      "relationships": ["Belongs to postman_workspaces.", "Belongs to postman_collections in the same workspace."]
+    }
+  ]
+}

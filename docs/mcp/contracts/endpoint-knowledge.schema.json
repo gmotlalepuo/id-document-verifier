@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://requestlab.local/schemas/mcp/endpoint-knowledge.schema.json",
+  "title": "RequestLab Endpoint Knowledge",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "endpoints"],
+  "properties": {
+    "version": { "type": "string" },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["semantic_ref", "purpose", "binding", "effect", "discovery_hints", "required_inputs", "response_extractions"],
+        "properties": {
+          "semantic_ref": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "purpose": { "type": "string", "minLength": 1 },
+          "binding": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "request_id"],
+            "properties": {
+              "status": { "enum": ["bound", "unresolved"] },
+              "request_id": { "type": ["string", "null"], "format": "uuid" }
+            }
+          },
+          "effect": { "enum": ["read", "create", "update", "delete"] },
+          "discovery_hints": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "required_inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "source"],
+              "properties": {
+                "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                "source": { "enum": ["user", "environment", "prior_step", "constant"] },
+                "constant": { "type": ["string", "number", "integer", "boolean", "null"] }
+              }
+            }
+          },
+          "response_extractions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "path", "required"],
+              "properties": {
+                "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                "path": { "type": ["string", "null"] },
+                "required": { "type": "boolean" }
+              }
+            }
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

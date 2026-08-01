@@ -1,0 +1,26 @@
+{
+  "contract_version": "1.0",
+  "cases": [
+    {
+      "name": "issue license with national id",
+      "message": "Please issue a license for national_id 436415528 in UAT.",
+      "expected_intent": "issue_license",
+      "expected_missing_inputs": [],
+      "expected_tool": "prepare_issue_license"
+    },
+    {
+      "name": "issue license missing national id",
+      "message": "Please issue a license in UAT.",
+      "expected_intent": "issue_license",
+      "expected_missing_inputs": ["national_id"],
+      "expected_tool": null
+    },
+    {
+      "name": "issue license with malformed national id",
+      "message": "Please issue a license for national_id 123 in UAT.",
+      "expected_intent": "issue_license",
+      "expected_missing_inputs": ["national_id"],
+      "expected_tool": null
+    }
+  ]
+}

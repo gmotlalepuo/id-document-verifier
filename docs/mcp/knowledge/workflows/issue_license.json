@@ -1,0 +1,53 @@
+{
+  "name": "issue_license",
+  "version": "1.0.0",
+  "description": "Look up a registration by national ID, validate required response values, and prepare a confirmed update to Endorsement-Complete.",
+  "required_inputs": [
+    {
+      "name": "national_id",
+      "type": "string",
+      "sensitive": true,
+      "description": "National identity number supplied by the user."
+    },
+    {
+      "name": "environment",
+      "type": "string",
+      "sensitive": false,
+      "description": "Explicit RequestLab environment, normally UAT or User Acceptance Testing."
+    }
+  ],
+  "steps": [
+    {
+      "id": "lookup_registration",
+      "request_ref": "a9758cea-ef5b-4527-aa2b-3140f36f4524",
+      "effect": "read",
+      "depends_on": [],
+      "confirmation": "none",
+      "inputs": {
+        "national_id": "input.national_id",
+        "environment": "input.environment"
+      },
+      "extract": {
+        "qr_link": "$.teacher_registrations.qr_link",
+        "reg_status": "$.teacher_registrations.reg_status"
+      },
+      "validations": [
+        { "field": "qr_link", "operator": "exists", "value": true },
+        { "field": "reg_status", "operator": "exists", "value": true }
+      ]
+    },
+    {
+      "id": "update_registration",
+      "request_ref": "105b8b1a-cee9-4e95-81c7-0b9f879f2f60",
+      "effect": "update",
+      "depends_on": ["lookup_registration"],
+      "confirmation": "required",
+      "inputs": {
+        "national_id": "input.national_id",
+        "qr_link": "steps.lookup_registration.qr_link",
+        "status": "literal:Endorsement-Complete",
+        "environment": "input.environment"
+      }
+    }
+  ]
+}

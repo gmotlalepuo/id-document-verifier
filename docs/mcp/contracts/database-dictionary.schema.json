@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://requestlab.local/schemas/mcp/database-dictionary.schema.json",
+  "title": "RequestLab Database Dictionary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "tenant_boundary", "tables"],
+  "properties": {
+    "version": { "type": "string" },
+    "tenant_boundary": { "const": "workspace" },
+    "tables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "purpose", "tenant_path", "fields", "relationships"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^postman_[a-z_]+$" },
+          "purpose": { "type": "string", "minLength": 1 },
+          "tenant_path": { "type": "string", "minLength": 1 },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "type", "purpose"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "purpose": { "type": "string" },
+                "sensitive": { "type": "boolean" }
+              }
+            }
+          },
+          "relationships": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

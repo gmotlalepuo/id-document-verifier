@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://requestlab.local/schemas/mcp/model-plan.schema.json",
+  "title": "RequestLab MCP Model Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "intent", "mode", "context", "inputs", "steps"],
+  "properties": {
+    "contract_version": {
+      "const": "1.0"
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "mode": {
+      "enum": ["plan_only", "read_only_auto", "confirm_writes"]
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace_id"],
+      "properties": {
+        "workspace_id": { "type": "string", "format": "uuid" },
+        "collection_id": { "type": ["string", "null"], "format": "uuid" },
+        "environment_id": { "type": ["string", "null"], "format": "uuid" },
+        "request_id": { "type": ["string", "null"], "format": "uuid" }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["string", "number", "integer", "boolean", "null"]
+      }
+    },
+    "missing_inputs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      }
+    },
+    "steps": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "tool", "operation", "effect", "arguments", "depends_on", "requires_confirmation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "maxLength": 80
+          },
+          "tool": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "maxLength": 80
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "effect": {
+            "enum": ["none", "read", "create", "update", "delete"]
+          },
+          "arguments": {
+            "type": "object"
+          },
+          "depends_on": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
+          "requires_confirmation": {
+            "type": "boolean"
+          },
+          "extract": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        }
+      }
+    }
+  }
+}

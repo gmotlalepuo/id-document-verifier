@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://requestlab.local/schemas/mcp/workflow.schema.json",
+  "title": "RequestLab Named Workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "version", "description", "required_inputs", "steps"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "maxLength": 120
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "required_inputs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type", "sensitive"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "type": {
+            "enum": ["string", "number", "integer", "boolean"]
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "request_ref", "effect", "depends_on", "confirmation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "request_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "effect": {
+            "enum": ["read", "create", "update", "delete"]
+          },
+          "depends_on": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
+          "confirmation": {
+            "enum": ["none", "required"]
+          },
+          "inputs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "extract": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "validations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["field", "operator", "value"],
+              "properties": {
+                "field": { "type": "string", "minLength": 1 },
+                "operator": {
+                  "enum": ["equals", "not_equals", "in", "exists"]
+                },
+                "value": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "allowed_environment_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    }
+  }
+}

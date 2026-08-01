@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "purpose": "Documentation fields used to rank stored RequestLab requests. Stored request configuration remains executable authority.",
+  "recommended_fields": [
+    "purpose",
+    "business_action",
+    "required_inputs",
+    "accepted_values",
+    "authentication",
+    "side_effect",
+    "expected_status_codes",
+    "example_request",
+    "example_response",
+    "extractions"
+  ],
+  "side_effects": ["read", "create", "update", "delete"],
+  "extraction_contract": {
+    "syntax": "dot path with zero-based array indexes",
+    "examples": [
+      "qr_link",
+      "teacher_registrations.0.reg_status"
+    ],
+    "missing_behavior": "Return MISSING_REQUIRED_INPUT and do not continue to a dependent write."
+  },
+  "authority_rule": "Documentation is a discovery hint. Validate the stored method, URL, headers, body, environment, and resource relationships before execution."
+}

@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "endpoints": [
+    {
+      "semantic_ref": "get_registration_by_national_id",
+      "purpose": "Find the teacher registration record required before a licence status update.",
+      "binding": {
+        "status": "bound",
+        "request_id": "a9758cea-ef5b-4527-aa2b-3140f36f4524"
+      },
+      "effect": "read",
+      "discovery_hints": [
+        "get by national id",
+        "teacher registration lookup",
+        "registration status",
+        "national_id"
+      ],
+      "required_inputs": [
+        { "name": "national_id", "source": "user" },
+        { "name": "environment", "source": "environment" }
+      ],
+      "response_extractions": [
+        { "name": "qr_link", "path": "$.teacher_registrations.qr_link", "required": true },
+        { "name": "reg_status", "path": "$.teacher_registrations.reg_status", "required": true }
+      ],
+      "notes": "The UUID, UAT environment template, and extraction paths were verified against a successful read-only UAT response on 2026-07-31."
+    },
+    {
+      "semantic_ref": "update_registration_status",
+      "purpose": "Update the registration status using the national ID and qr_link returned by the lookup.",
+      "binding": {
+        "status": "bound",
+        "request_id": "105b8b1a-cee9-4e95-81c7-0b9f879f2f60"
+      },
+      "effect": "update",
+      "discovery_hints": [
+        "update status",
+        "endorsement complete",
+        "teacher registration update",
+        "qr_link"
+      ],
+      "required_inputs": [
+        { "name": "national_id", "source": "user" },
+        { "name": "qr_link", "source": "prior_step" },
+        { "name": "status", "source": "constant", "constant": "Endorsement-Complete" },
+        { "name": "environment", "source": "environment" }
+      ],
+      "response_extractions": [],
+      "notes": "Verified in the UAT Endpoints collection. The URL resolves through teacher_reg_backend_base_url and supplies endorsement_status and qr_link as enabled query parameters. Stored example values must be replaced at execution time. Confirmation is mandatory because this is state-changing."
+    }
+  ]
+}

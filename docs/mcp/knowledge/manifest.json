@@ -1,0 +1,9 @@
+{
+  "contract_version": "1.0",
+  "database_dictionary": "database-dictionary.json",
+  "endpoint_profile_contract": "endpoint-profile.json",
+  "endpoint_knowledge": "endpoints.json",
+  "workflows": [
+    "workflows/issue_license.json"
+  ]
+}

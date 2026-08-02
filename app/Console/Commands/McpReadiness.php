@@ -25,7 +25,7 @@ class McpReadiness extends Command
         }
         $checks['allowlist_workflow_version'] = ($rollout['workflow_version'] ?? null) === '1.0.0';
         if (!$this->option('skip-model')) {
-            $checks['qwen_model'] = $this->check(fn () => ($model->status()['installed'] ?? false) === true);
+            $checks['qwen_model'] = $this->check(fn () => ($model->status()['model_installed'] ?? false) === true);
         }
         foreach ($checks as $name => $passed) $this->line(($passed ? '<info>PASS</info> ' : '<error>FAIL</error> ').$name);
         return in_array(false, $checks, true) ? self::FAILURE : self::SUCCESS;

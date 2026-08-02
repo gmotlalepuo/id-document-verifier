@@ -50,6 +50,14 @@ class ToolDefinitionCatalog
                 'environment_id' => $this->uuid('Selected UAT environment UUID.'),
                 'national_id' => ['type' => 'string', 'pattern' => '^[A-Za-z0-9-]{5,40}$', 'maxLength' => 40],
             ], ['workspace_id', 'collection_id', 'environment_id', 'national_id']);
+            $tools[] = $this->tool('prepare_issue_payment', 'Resolve a reviewed service payment endpoint and prepare an exact Manager-Approved write confirmation. This never performs the write.', [
+                'workspace_id' => $this->uuid('Active workspace UUID.'),
+                'collection_id' => $this->nullableUuid('Preferred active collection UUID; service-folder discovery may select another authorized collection.'),
+                'environment_id' => $this->nullableUuid('Preferred active environment UUID.'),
+                'national_id' => ['type' => 'string', 'pattern' => '^[A-Za-z0-9-]{5,40}$', 'maxLength' => 40],
+                'service' => ['type' => 'string', 'enum' => ['teacher_registration', 'license_renewal']],
+                'target_environment' => ['type' => 'string', 'enum' => ['uat', 'production']],
+            ], ['workspace_id', 'national_id', 'service', 'target_environment']);
         }
         return $tools;
     }

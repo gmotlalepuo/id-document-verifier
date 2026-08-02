@@ -16,33 +16,20 @@ class IssueLicenseWorkflowService
         private readonly JsonPathExtractor $extractor,
         private readonly CanonicalDigest $digest,
         private readonly ConfirmationService $confirmations,
-        private readonly RolloutPolicy $rollout,
     ) {
     }
 
     public function prepare(array $arguments, AuthenticatedUser $user): array
     {
         $this->requireExecutionEnabled();
-        if (!$this->knowledge->status()['ready_for_execution']) {
-            throw new McpException('KNOWLEDGE_NOT_READY', 'Reviewed workflow bindings are not ready for execution.', httpStatus: 409);
-        }
-
         $repository = $this->repository->forUser($user);
         $workflow = $this->knowledge->getWorkflow('issue_license')['workflow'];
         $lookupKnowledge = $this->knowledge->getEndpoint('get_registration_by_national_id');
-        $updateKnowledge = $this->knowledge->getEndpoint('update_registration_status');
-        $lookupId = $lookupKnowledge['binding']['request_id'];
-        $updateId = $updateKnowledge['binding']['request_id'];
-        $this->rollout->assertIssueLicense([
-            'workspace_id' => $arguments['workspace_id'], 'collection_id' => $arguments['collection_id'],
-            'environment_id' => $arguments['environment_id'], 'lookup_request_id' => $lookupId,
-            'update_request_id' => $updateId, 'workflow_version' => $workflow['version'],
-        ]);
-
         $collection = $repository->getCollection($arguments['collection_id']);
         $environment = $repository->getEnvironment($arguments['environment_id']);
-        $lookup = $repository->getRequest($lookupId);
-        $update = $repository->getRequest($updateId);
+        [$lookup, $update] = $this->discoverReviewedRequests($repository, $arguments['collection_id']);
+        $lookupId = $lookup['id'];
+        $updateId = $update['id'];
         $this->validateRelationships($arguments, $collection, $environment, $lookup, $update);
         $this->validateStoredDefinitions($lookup, $update);
 
@@ -172,6 +159,41 @@ class IssueLicenseWorkflowService
             || ($params['qr_link'] ?? null) !== '{{qr_link}}') {
             throw new McpException('ENDPOINT_DEFINITION_CHANGED', 'The reviewed update parameters changed after binding.', httpStatus: 409);
         }
+    }
+
+    private function discoverReviewedRequests(RequestLabRepository $repository, string $collectionId): array
+    {
+        $folder = null;
+        foreach ($repository->listFolders($collectionId, null) as $candidate) {
+            $name = trim((string) preg_replace('/[^a-z0-9]+/', ' ', strtolower((string) ($candidate['name'] ?? ''))));
+            if (in_array($name, ['teacher registration', 'teacher registrations'], true)) {
+                $folder = $candidate;
+                break;
+            }
+        }
+        if (!$folder) {
+            throw new McpException('LICENSE_ENDPOINT_NOT_FOUND', 'The Teacher Registration service folder was not found in the selected collection.', httpStatus: 404);
+        }
+
+        $lookup = null;
+        $update = null;
+        foreach ($repository->listRequests($collectionId, $folder['id']) as $summary) {
+            if (!in_array($summary['method'] ?? null, ['GET', 'PUT'], true)) continue;
+            $request = $repository->getRequest($summary['id']);
+            if (($request['url'] ?? null) !== '{{teacher_reg_backend_base_url}}teacher_registrations/{{national_id}}') continue;
+            if (($request['method'] ?? null) === 'GET') $lookup = $request;
+            if (($request['method'] ?? null) === 'PUT') {
+                $params = [];
+                foreach ($request['params'] ?? [] as $row) {
+                    if (is_array($row) && ($row['enabled'] ?? true) === true) $params[$row['key'] ?? ''] = $row['value'] ?? '';
+                }
+                if (($params['endorsement_status'] ?? null) === '{{endorsement_status}}' && ($params['qr_link'] ?? null) === '{{qr_link}}') $update = $request;
+            }
+        }
+        if (!$lookup || !$update) {
+            throw new McpException('LICENSE_ENDPOINT_NOT_FOUND', 'The reviewed Teacher Registration lookup and license-write endpoints were not found in the service folder.', httpStatus: 404);
+        }
+        return [$lookup, $update];
     }
 
     private function requireExecutionEnabled(): void

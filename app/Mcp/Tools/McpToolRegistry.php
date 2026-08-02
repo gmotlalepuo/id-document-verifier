@@ -7,6 +7,7 @@ use App\Mcp\Data\RequestLabRepository;
 use App\Mcp\Conversation\ConversationService;
 use App\Mcp\Exceptions\McpException;
 use App\Mcp\Execution\IssueLicenseWorkflowService;
+use App\Mcp\Execution\IssuePaymentWorkflowService;
 use App\Mcp\Knowledge\EndpointDiscovery;
 use App\Mcp\Knowledge\KnowledgeCatalog;
 use App\Mcp\Model\ModelClient;
@@ -25,6 +26,7 @@ class McpToolRegistry
         private readonly KnowledgeCatalog $knowledge,
         private readonly EndpointDiscovery $endpointDiscovery,
         private readonly IssueLicenseWorkflowService $issueLicense,
+        private readonly IssuePaymentWorkflowService $issuePayment,
         private readonly ConversationService $conversations,
     ) {
     }
@@ -109,6 +111,14 @@ class McpToolRegistry
                 'environment_id' => 'required|uuid',
                 'national_id' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{5,40}$/', 'max:40'],
             ], fn ($a) => $this->issueLicense->prepare($a, $user)),
+            'prepare_issue_payment' => $this->validated($arguments, [
+                'workspace_id' => 'required|uuid',
+                'collection_id' => 'nullable|uuid',
+                'environment_id' => 'nullable|uuid',
+                'national_id' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{5,40}$/', 'max:40'],
+                'service' => 'required|in:teacher_registration,license_renewal',
+                'target_environment' => 'required|in:uat,production',
+            ], fn ($a) => $this->issuePayment->prepare($a, $user)),
             default => throw new McpException('TOOL_NOT_FOUND', 'Unknown MCP tool: '.$name.'.', httpStatus: 404),
         };
     }

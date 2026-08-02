@@ -86,6 +86,13 @@ class IssueLicenseWorkflowServiceTest extends TestCase
             'id' => self::ENVIRONMENT_ID, 'workspace_id' => self::WORKSPACE_ID,
             'collection_id' => self::COLLECTION_ID, 'name' => 'User Acceptance Testing ',
         ]);
+        $repository->shouldReceive('listFolders')->with(self::COLLECTION_ID, null)->andReturn([[
+            'id' => '6c5dfc50-f0c6-4cb7-bf35-1998a9a8e486', 'collection_id' => self::COLLECTION_ID, 'name' => 'Teacher Registration',
+        ]]);
+        $repository->shouldReceive('listRequests')->with(self::COLLECTION_ID, '6c5dfc50-f0c6-4cb7-bf35-1998a9a8e486')->andReturn([
+            ['id' => self::LOOKUP_ID, 'method' => 'GET'],
+            ['id' => self::UPDATE_ID, 'method' => 'PUT'],
+        ]);
         $repository->shouldReceive('getRequest')->with(self::LOOKUP_ID)->andReturn([
             'id' => self::LOOKUP_ID, 'collection_id' => self::COLLECTION_ID, 'name' => 'Registrations by ID',
             'method' => 'GET', 'url' => '{{teacher_reg_backend_base_url}}teacher_registrations/{{national_id}}',
@@ -111,7 +118,6 @@ class IssueLicenseWorkflowServiceTest extends TestCase
             new JsonPathExtractor(),
             new CanonicalDigest(),
             new ConfirmationService(),
-            new \App\Mcp\Execution\RolloutPolicy(),
         );
     }
 

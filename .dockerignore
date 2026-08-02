@@ -3,6 +3,8 @@
 .env
 .env.*
 .phpunit.result.cache
+!.env.example
+!.env.docker.example
 vendor
 node_modules
 storage/app/verification/*

@@ -7,6 +7,7 @@ RUN apt-get update \
         git \
         unzip \
         libzip-dev \
+        libicu-dev \
         libpng-dev \
         libjpeg62-turbo-dev \
         libfreetype6-dev \
@@ -14,7 +15,7 @@ RUN apt-get update \
         imagemagick \
         poppler-utils \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql zip bcmath gd \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql zip bcmath gd intl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

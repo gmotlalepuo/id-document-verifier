@@ -38,6 +38,10 @@ return [
         'name' => env('OLLAMA_MODEL', 'qwen2.5:1.5b'),
         'timeout_seconds' => (int) env('OLLAMA_TIMEOUT', 120),
         'context_length' => (int) env('OLLAMA_CONTEXT_LENGTH', 8192),
+        'max_output_tokens' => (int) env('OLLAMA_MAX_OUTPUT_TOKENS', 256),
         'keep_alive' => env('OLLAMA_KEEP_ALIVE', '10m'),
+    ],
+    'teacher_registration' => [
+        'service_token' => env('TEACHER_REGISTRATION_AI_TOKEN', ''),
     ],
 ];

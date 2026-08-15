@@ -8,6 +8,7 @@ use App\Mcp\Conversation\ConversationService;
 use App\Mcp\Exceptions\McpException;
 use App\Mcp\Execution\IssueLicenseWorkflowService;
 use App\Mcp\Execution\IssuePaymentWorkflowService;
+use App\Mcp\TeacherRegistration\TeacherRegistrationSummaryService;
 use App\Mcp\Knowledge\EndpointDiscovery;
 use App\Mcp\Knowledge\KnowledgeCatalog;
 use App\Mcp\Model\ModelClient;
@@ -27,6 +28,7 @@ class McpToolRegistry
         private readonly EndpointDiscovery $endpointDiscovery,
         private readonly IssueLicenseWorkflowService $issueLicense,
         private readonly IssuePaymentWorkflowService $issuePayment,
+        private readonly TeacherRegistrationSummaryService $teacherRegistrationSummary,
         private readonly ConversationService $conversations,
     ) {
     }
@@ -35,6 +37,12 @@ class McpToolRegistry
     {
         return array_merge($this->catalog->definitions(), [
             $this->tool('model_status', 'Check whether the configured local Ollama and Qwen model are ready.'),
+            $this->tool('summarize_teacher_registration', 'Summarize supplied Teacher Registration, comments, and audit trail JSON for an authorized officer.', [
+                'national_id' => ['type' => 'string', 'minLength' => 3, 'maxLength' => 64],
+                'teacher_registration' => ['type' => 'object'],
+                'comments' => ['type' => 'array'],
+                'audit_trails' => ['type' => 'array'],
+            ], ['national_id', 'teacher_registration', 'comments', 'audit_trails']),
             $this->tool('plan_request', 'Convert a natural-language request into a validated, non-executing MCP plan.', [
                 'message' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 4000],
                 'mode' => ['type' => 'string', 'enum' => ['plan_only', 'read_only_auto', 'confirm_writes']],
@@ -91,6 +99,12 @@ class McpToolRegistry
                 $a['limit'] ?? 10,
             )),
             'model_status' => $this->withoutArguments($arguments, fn () => $this->model->status()),
+            'summarize_teacher_registration' => $this->validated($arguments, [
+                'national_id' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{3,64}$/'],
+                'teacher_registration' => 'required|array',
+                'comments' => 'present|array',
+                'audit_trails' => 'present|array',
+            ], fn ($a) => $this->teacherRegistrationSummary->summarize($a)),
             'plan_request' => $this->validated($arguments, [
                 'message' => 'required|string|min:1|max:4000',
                 'mode' => 'required|in:plan_only,read_only_auto,confirm_writes',

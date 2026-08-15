@@ -22,6 +22,7 @@ class OllamaModelClient implements ModelClient
                     'options' => [
                         'temperature' => 0,
                         'num_ctx' => config('mcp.model.context_length'),
+                        'num_predict' => config('mcp.model.max_output_tokens'),
                     ],
                     'keep_alive' => config('mcp.model.keep_alive'),
                 ]);
@@ -56,6 +57,11 @@ class OllamaModelClient implements ModelClient
             $this->integerOrNull($response->json('eval_count')),
             $this->integerOrNull($response->json('total_duration')),
         );
+    }
+
+    public function generateStructured(array $messages, array $schema): ModelResponse
+    {
+        return $this->generatePlan($messages, $schema);
     }
 
     public function status(): array

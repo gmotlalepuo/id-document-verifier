@@ -5,9 +5,11 @@ use App\Http\Controllers\Mcp\McpController;
 use App\Http\Controllers\Mcp\McpConfirmationController;
 use App\Http\Controllers\Mcp\McpConversationController;
 use App\Http\Controllers\Mcp\McpExecutionAuditController;
+use App\Http\Controllers\Mcp\TeacherRegistrationAiController;
 use App\Services\OcrDependencyChecker;
 Route::get('/v1/health',function(OcrDependencyChecker $checker){$dependencies=$checker->status();$ready=!in_array(false,array_column($dependencies,'available'),true);return response()->json(['status'=>$ready?'ready':'not_ready','service'=>'id-document-verifier','dependencies'=>$dependencies],$ready?200:503);});
 Route::post('/mcp', [McpController::class, 'handle']);
+Route::post('/mcp/teacher-registration/summary', [TeacherRegistrationAiController::class, 'summary']);
 Route::post('/mcp/confirmations/{confirmation}/approve', [McpConfirmationController::class, 'approve'])
     ->whereUuid('confirmation');
 Route::get('/mcp/conversations', [McpConversationController::class, 'index']);

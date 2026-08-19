@@ -59,6 +59,9 @@ services:
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
     volumes:
       - app-storage:/var/www/html/storage
+    networks:
+      - default
+      - 26digital
     depends_on:
       db:
         condition: service_healthy
@@ -79,16 +82,16 @@ services:
       app:
         condition: service_started
 
-  nginx:
-    build:
-      context: .
-      target: web
-    image: id-document-verifier-nginx
-    restart: unless-stopped
-    ports:
-      - "${HTTP_PORT:-6060}:80"
-    depends_on:
-      - app
+  # nginx:
+  #   build:
+  #     context: .
+  #     target: web
+  #   image: id-document-verifier-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${HTTP_PORT:-6060}:80"
+  #   depends_on:
+  #     - app
 
   db:
     image: mariadb:10.11
@@ -131,6 +134,11 @@ services:
         condition: service_healthy
     entrypoint: ["/bin/ollama"]
     command: ["pull", "${OLLAMA_MODEL:-qwen2.5:1.5b}"]
+
+networks:
+  default: {}
+  26digital:
+    external: true
 
 volumes:
   app-storage:

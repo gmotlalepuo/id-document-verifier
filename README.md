@@ -1,6 +1,6 @@
 # ID Document Verifier API
 
-Laravel 12 / PHP 8.2+ API that downloads an official identity document, enhances its pages, extracts Botswana ID fields with Tesseract OCR, and compares them with supplied identity data.
+Laravel 13 / PHP 8.5+ API that downloads an official identity document, enhances its pages, extracts Botswana ID fields with Tesseract OCR, and compares them with supplied identity data.
 
 ## Result semantics
 
@@ -13,7 +13,7 @@ Every field includes `comparable`, `match`, `score`, and a reason. ID numbers ar
 
 ## Requirements
 
-- PHP 8.2+ with `fileinfo`, `json`, `mbstring`, `openssl`, and PDO MySQL
+- PHP 8.5+ with `fileinfo`, `json`, `mbstring`, `openssl`, and PDO MySQL
 - Composer 2
 - MySQL/MariaDB (SQLite can be used for tests)
 - [Tesseract OCR](https://github.com/tesseract-ocr/tesseract)

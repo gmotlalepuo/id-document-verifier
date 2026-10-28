@@ -4,11 +4,11 @@
     "description": "API for verifying supplied identity details against OCR data from official documents.",
     "license": "proprietary",
     "require": {
-        "php": "^8.2",
+        "php": "^8.5",
         "ext-fileinfo": "*",
         "ext-json": "*",
         "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^12.62",
+        "laravel/framework": "^13.0",
         "symfony/process": "^7.2"
     },
     "require-dev": {
@@ -26,7 +26,7 @@
         "post-root-package-install": ["@php -r \"file_exists('.env') || copy('.env.example', '.env');\""],
         "post-create-project-cmd": ["@php artisan key:generate --ansi"]
     },
-    "config": {"optimize-autoloader": true, "preferred-install": "dist", "sort-packages": true, "platform": {"php": "8.2.12"}},
+    "config": {"optimize-autoloader": true, "preferred-install": "dist", "sort-packages": true, "platform": {"php": "8.5.0"}},
     "minimum-stability": "dev",
     "prefer-stable": true
 }
